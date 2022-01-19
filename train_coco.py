@@ -48,9 +48,9 @@ def run_finetuning(config):
 
     # Load the training and validation dataset
     train_dt, coco_class_names = load_coco_dataset(
-        config, config.batch_size, augmentation=True, img_dir="train2017", ann_fil="annotations/instances_train2017.json")
+        config, config.batch_size, augmentation=True, img_dir="train2017", ann_file="annotations/instances_train2017.json")
     valid_dt, _ = load_coco_dataset(
-        config, 1, augmentation=False, img_dir="val2017", ann_fil="annotations/instances_val2017.json")
+        config, 1, augmentation=False, img_dir="val2017", ann_file="annotations/instances_val2017.json")
 
     # Train the backbone and the transformers
     # Check the training_config file for the other hyperparameters

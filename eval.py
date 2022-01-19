@@ -15,6 +15,7 @@ from detr_tf.bbox import xcycwh_to_xy_min_xy_max, xcycwh_to_yx_min_yx_max
 from detr_tf.inference import numpy_bbox_to_image
 from detr_tf.training_config import TrainingConfig, training_config_parser
 
+from tqdm import tqdm
 
 def build_model(config):
     """ Build the model with the pretrained weights. In this example
@@ -36,9 +37,8 @@ def eval_model(model, config, class_names, valid_dt):
         'box' : [[APDataObject() for _ in class_names] for _ in iou_thresholds],
         'mask': [[APDataObject() for _ in class_names] for _ in iou_thresholds]
     }
-    it = 0
 
-    for images, target_bbox, target_class in valid_dt:
+    for images, target_bbox, target_class in tqdm(valid_dt):
         # Forward pass
         m_outputs = model(images)
         # Run predictions
@@ -52,10 +52,6 @@ def eval_model(model, config, class_names, valid_dt):
         t_class = tf.squeeze(t_class, axis=-1)
         # Compute map
         cal_map(p_bbox, p_labels, p_scores,  np.zeros((138, 138, len(p_bbox))), np.array(t_bbox), np.array(t_class), np.zeros((138, 138, len(t_bbox))), ap_data, iou_thresholds)
-        print(f"Computing map.....{it}", end="\r")
-        it += 1
-        #if it > 10:
-        #    break
 
     # Compute the mAp over all thresholds
     calc_map(ap_data, iou_thresholds, class_names, print_result=True)
@@ -73,7 +69,9 @@ if __name__ == "__main__":
     # Load the model with the new layers to finetune
     detr = build_model(config)
 
-    valid_dt, class_names = load_coco_dataset(config, 1, augmentation=None)
+    # valid_dt, class_names = load_coco_dataset(config, 1, augmentation=None)
+    valid_dt, class_names = load_coco_dataset(
+        config, 1, augmentation=False, img_dir="val2017", ann_file="annotations/instances_val2017.json")
 
     # Run training
     eval_model(detr, config, class_names, valid_dt)
